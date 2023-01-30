@@ -1,0 +1,18 @@
+compare_data_frames <- function(df1, df2, by) {
+  # Find rows that are in df1 but not in df2
+  dropped_rows <- anti_join(df1, df2, by = by)
+  
+  # Drop empty columns in dropped_rows
+  dropped_rows <- dropped_rows[colSums(is.na(dropped_rows)) == 0]
+  
+  # Number of dropped rows
+  dropped_rows_count <- nrow(dropped_rows)
+  
+  # Number of unique profiles dropped
+  dropped_profiles_count <- n_distinct(dropped_rows[[by]])
+  
+  # Return results
+  return(list(dropped_rows = dropped_rows, 
+              dropped_rows_count = dropped_rows_count, 
+              dropped_profiles_count = dropped_profiles_count))
+}
