@@ -2,42 +2,59 @@
 library(dplyr)
 
 # Function to compare two data frames
-compare_dfs <- function(df1, df2, join_by){
+compare_dfs_robust <- function(df1, df2, join_by){
+  
+  # Check if join by columns exist in both data frames
+  join_by_cols_df1 <- intersect(colnames(df1), join_by)
+  join_by_cols_df2 <- intersect(colnames(df2), join_by)
+  if(length(join_by_cols_df1) == 0){
+    join_by_cols_df1 <- intersect(colnames(df1), tolower(join_by))
+  }
+  if(length(join_by_cols_df2) == 0){
+    join_by_cols_df2 <- intersect(colnames(df2), tolower(join_by))
+  }
+  if(length(join_by_cols_df1) == 0){
+    join_by_cols_df1 <- intersect(colnames(df1), toupper(join_by))
+  }
+  if(length(join_by_cols_df2) == 0){
+    join_by_cols_df2 <- intersect(colnames(df2), toupper(join_by))
+  }
+  
+  if(length(join_by_cols_df1) == 0){
+    stop("Join by columns not found in first data frame")
+  }
+  if(length(join_by_cols_df2) == 0){
+    stop("Join by columns not found in second data frame")
+  }
+  
+  # Check if both data frames have the same join by columns
+  if(!all(join_by_cols_df1 == join_by_cols_df2)){
+    stop("Join by columns do not match between both data frames")
+  }
   
   # Compare two data frames
-  df_compare <- anti_join(df1, df2, by = join_by)
-
+  df_compare <- anti_join(df1, df2, by = join_by_cols_df1)
+  
+  # Check for missing values
+  if(any(is.na(df_compare[, join_by_cols_df1]))){
+    stop("Missing values found in join by columns")
+  }
+  
   # Count number of dropped rows
   n_dropped_rows <- nrow(df_compare)
-
+  
   # Count number of unique profiles dropped
-  n_dropped_profiles <- n_distinct(df_compare[, join_by])
+  n_dropped_profiles <- n_distinct(df_compare[, join_by_cols_df1])
   
   # Get dropped IDs
-  dropped_ids <- df_compare[, join_by]
+  dropped_ids <- df_compare[, join_by_cols_df1]
   
   # Count excluded unique values in join by
-  excluded_join_by_values <- length(setdiff(df1[, join_by], df2[, join_by]))
+  excluded_join_by_values <- length(setdiff(df1[, join_by_cols_df1], df2[, join_by_cols_df2]))
   
   # Summarize results
   result <- list(dropped_rows = n_dropped_rows, 
                  dropped_profiles = n_dropped_profiles, 
                  dropped_ids = dropped_ids,
                  excluded_join_by_values = excluded_join_by_values,
-                 dropped_rows_df = df_compare)
-  return(result)
-}
-
-# Load sample data frames
-df1 <- data.frame(Name = c("John", "Jane", "Jim", "Jenny", "Jack"),
-                  Age = c(30, 25, 35, 28, 33),
-                  Gender = c("Male", "Female", "Male", "Female", "Male"))
-df2 <- data.frame(Name = c("Jane", "Jim", "Jenny", "Jerry", "Julie"),
-                  Age = c(25, 35, 28, 40, 45),
-                  Gender = c("Female", "Male", "Female", "Male", "Female"))
-
-# Call the function
-result <- compare_dfs(df1, df2, "Name")
-
-# Print the result
-print(result)
+                 dropped_rows_df = df_
