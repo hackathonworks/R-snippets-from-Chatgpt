@@ -1,0 +1,43 @@
+# Load required packages
+library(dplyr)
+
+# Function to compare two data frames
+compare_dfs <- function(df1, df2, join_by){
+  
+  # Compare two data frames
+  df_compare <- anti_join(df1, df2, by = join_by)
+
+  # Count number of dropped rows
+  n_dropped_rows <- nrow(df_compare)
+
+  # Count number of unique profiles dropped
+  n_dropped_profiles <- n_distinct(df_compare[, join_by])
+  
+  # Get dropped IDs
+  dropped_ids <- df_compare[, join_by]
+  
+  # Count excluded unique values in join by
+  excluded_join_by_values <- length(setdiff(df1[, join_by], df2[, join_by]))
+  
+  # Summarize results
+  result <- list(dropped_rows = n_dropped_rows, 
+                 dropped_profiles = n_dropped_profiles, 
+                 dropped_ids = dropped_ids,
+                 excluded_join_by_values = excluded_join_by_values,
+                 dropped_rows_df = df_compare)
+  return(result)
+}
+
+# Load sample data frames
+df1 <- data.frame(Name = c("John", "Jane", "Jim", "Jenny", "Jack"),
+                  Age = c(30, 25, 35, 28, 33),
+                  Gender = c("Male", "Female", "Male", "Female", "Male"))
+df2 <- data.frame(Name = c("Jane", "Jim", "Jenny", "Jerry", "Julie"),
+                  Age = c(25, 35, 28, 40, 45),
+                  Gender = c("Female", "Male", "Female", "Male", "Female"))
+
+# Call the function
+result <- compare_dfs(df1, df2, "Name")
+
+# Print the result
+print(result)
