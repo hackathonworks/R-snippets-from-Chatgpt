@@ -11,8 +11,51 @@ compare_data_frames <- function(df1, df2, by) {
   # Number of unique profiles dropped
   dropped_profiles_count <- n_distinct(dropped_rows[[by]])
   
+  # Dropped profiles and their values
+  dropped_profiles <- unique(dropped_rows[[by]])
+  
   # Return results
   return(list(dropped_rows = dropped_rows, 
               dropped_rows_count = dropped_rows_count, 
-              dropped_profiles_count = dropped_profiles_count))
+              dropped_profiles_count = dropped_profiles_count,
+              dropped_profiles = dropped_profiles))
 }
+
+
+result <- compare_data_frames(df1, df2, c("col1", "col3"))
+
+# Display results
+cat("Number of dropped rows:", result$dropped_rows_count, "\n")
+cat("Number of dropped profiles:", result$dropped_profiles_count, "\n")
+cat("Dropped profiles:")
+print(result$dropped_profiles)
+cat("Dropped rows:")
+print(result$dropped_rows)
+
+
+In this version of the code, the data frames df1 and df2 have two categorical columns: col1 and col3. The compare_data_frames function is called using both columns as the by argument, meaning the comparison will be made on both columns. The results are displayed as in the previous example.
+
+
+
+
+output
+Here is the expected output of the above code:
+
+Number of dropped rows: 2 
+
+Number of dropped profiles: 2 
+
+Dropped profiles:
+  col1 col3
+4   D   Z
+5   E   Y
+
+Dropped rows:
+  col1 col2 col3
+4   D    4   Z
+5   E    5   Y
+The output shows that there are still 2 dropped rows and 2 dropped profiles, but now the comparison is made on both columns col1 and col3. The dropped profiles are the combinations of values "D" and "Z", and "E" and "Y" in the two columns, and the dropped rows are the 4th and 5th rows of df1.
+
+
+
+
